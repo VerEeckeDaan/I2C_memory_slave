@@ -55,9 +55,11 @@ using namespace std;
         cout << "Read from device: " << endl;
         for (int i; i < 5; i++){
             if (i == 0){
-                cout << std::hex << "Adress: 0x" << (int)buffer2[i] << endl;   
-            }else{
+                cout << std::hex << "Adress: 0x" << (int)buffer2[i] << " bevat de data : ";   
+            }else if(i == 4){
                 cout << (int)buffer2[i] << endl;
+            }else{
+                cout << (int)buffer2[i] << ", ";
             }
         }
     }
