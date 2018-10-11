@@ -6,12 +6,17 @@
 #include <linux/i2c-dev.h>  // I2C_SLAVE
 #include <chrono>
 #include <thread>
+#include <stdio.h>      /* printf, scanf, puts, NULL */
+#include <stdlib.h>     /* srand, rand */
+#include <time.h>       /* time */
 
 using namespace std;
 
     int main(void) {
     const std::string DEVICE = "/dev/i2c-1";
     const unsigned int BUFFER_SIZE = 5;
+
+    srand (time(NULL));
 
     int i2cfile;
     if ((i2cfile = open(DEVICE.c_str(), O_RDWR)) < 0) {
@@ -27,7 +32,7 @@ using namespace std;
     }
     cout << "Ready to communicate with slave device" << endl;
 
-    char buffer_adresses[32] = { 0x00, 0x01, 0x02, 0x03,
+    char adress_buffer[32] = { 0x00, 0x01, 0x02, 0x03,
                                 0x04, 0x05, 0x06, 0x07,
                                 0x08, 0x09, 0x0a, 0x0b,
                                 0x0c, 0x0d, 0x0e, 0x0f,
@@ -37,15 +42,21 @@ using namespace std;
                                 0x1c, 0x1d, 0x1e, 0x1f
                             };
     
-    for (int i; i < 32; i++){
-        char buffer_send[32] = { 0x00, buffer_adresses[i], 5, 0, 0, 0};
-        write(i2cfile, buffer_send, 6) != 6;
+
+    for (int i = 0; i < 32; i++){
+        int rand1 = rand() % 2;
+        int rand2 = rand() % 2;
+        const char char_max = -1;
+        char rand_1 = (rand1 & char_max);
+        char rand_2 = (rand2 & char_max);
+        char send_buffer[32] = { 0x00, adress_buffer[i], rand_1, rand_2, 0, 0 };
+        write(i2cfile, send_buffer, 6) != 6;
     }
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-    char buffer5[] = { 0x03 };
-    if (write(i2cfile, buffer5, 1) != 1) {
+    char print_buffer[] = { 0x03 };
+    if (write(i2cfile, print_buffer, 1) != 1) {
         cout << "Successfully wrote to the i2c device." << endl;
     } else {
         cout << "Failed to write to the i2c device." << endl;
@@ -53,29 +64,30 @@ using namespace std;
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-
-    char buffer6[BUFFER_SIZE] = { 0x01, 0x00 };
-    write(i2cfile, buffer6, 2);
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    if (read(i2cfile, buffer6, 5) != 5) {
+for (int i = 0; i < 32; i++){
+    char pull_buffer[BUFFER_SIZE] = { 0x01, adress_buffer[i] };
+    write(i2cfile, pull_buffer, 2);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    if (read(i2cfile, pull_buffer, 6) != 6) {
         cout << "Failed to read from the i2c device." << endl;
     } else {
-        cout << "Read from device: " << endl;
-        for (int i; i < 5; i++){
+        for (int i = 0; i < 5; i++){
             if (i == 0){
-                cout << std::hex << "Adress: 0x" << (int)buffer6[i] << " bevat de data : ";   
+                cout << std::hex << "Adress: 0x" << (int)pull_buffer[i] << " bevat de data : ";   
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
             }else if(i == 4){
-                cout << (int)buffer6[i] << endl;
+                cout << (int)pull_buffer[i] << endl;
             }else{
-                cout << (int)buffer6[i] << ", ";
+                cout << (int)pull_buffer[i] << ", ";
             }
         }
     }
+}
     
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-    char buffer7[] = { 0x02 };
-    if (write(i2cfile, buffer7, 1) != 1) {
+    /*char clear_buffer[] = { 0x02 };
+    if (write(i2cfile, clear_buffer, 1) != 1) {
         cout << "Successfully cleared the i2c device." << endl;
     } else {
         cout << "Failed to clear the i2c device." << endl;
@@ -83,13 +95,12 @@ using namespace std;
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-    if (write(i2cfile, buffer5, 1) != 1) {
+    if (write(i2cfile, print_buffer, 1) != 1) {
         cout << "Successfully wrote to the i2c device." << endl;
     } else {
         cout << "Failed to write to the i2c device." << endl;
-    }
+    }*/
     
   close(i2cfile);
-
   return 0;
 }
