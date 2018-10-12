@@ -44,12 +44,12 @@ using namespace std;
     
 
     for (int i = 0; i < 32; i++){
-        int rand1 = rand() % 2;
-        int rand2 = rand() % 2;
+        int rand1 = rand() % 9;
+        int rand2 = rand() % 9;
         const char char_max = -1;
         char rand_1 = (rand1 & char_max);
         char rand_2 = (rand2 & char_max);
-        char send_buffer[32] = { 0x00, adress_buffer[i], rand_1, rand_2, 0, 0 };
+        char send_buffer[6] = { 0x00, adress_buffer[i], rand_1, 2, 0, 0 };
         write(i2cfile, send_buffer, 6) != 6;
     }
 
@@ -68,7 +68,7 @@ for (int i = 0; i < 32; i++){
     char pull_buffer[BUFFER_SIZE] = { 0x01, adress_buffer[i] };
     write(i2cfile, pull_buffer, 2);
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    if (read(i2cfile, pull_buffer, 6) != 6) {
+    if (read(i2cfile, pull_buffer, 5) != 5) {
         cout << "Failed to read from the i2c device." << endl;
     } else {
         for (int i = 0; i < 5; i++){
@@ -86,7 +86,7 @@ for (int i = 0; i < 32; i++){
     
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-    /*char clear_buffer[] = { 0x02 };
+    char clear_buffer[] = { 0x02 };
     if (write(i2cfile, clear_buffer, 1) != 1) {
         cout << "Successfully cleared the i2c device." << endl;
     } else {
@@ -99,7 +99,7 @@ for (int i = 0; i < 32; i++){
         cout << "Successfully wrote to the i2c device." << endl;
     } else {
         cout << "Failed to write to the i2c device." << endl;
-    }*/
+    }
     
   close(i2cfile);
   return 0;
